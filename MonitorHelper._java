@@ -1,0 +1,71 @@
+
+	import java.io.FileNotFoundException;
+	import java.io.FileReader;
+	import java.io.FileWriter;
+	import java.io.IOException;
+
+	import org.eclipse.swt.graphics.Rectangle;
+	import org.json.simple.JSONObject;
+	import org.json.simple.parser.JSONParser;
+	import org.json.simple.parser.ParseException;
+
+	public class MonitorHelper {
+
+		private static final String CONFIG_FILE_PATH_MONITOR = "D:\\JavaWorkspace\\ImageCapture_1\\testFile_2.json";
+
+		public Rectangle readAndBuildCoordinatesFromConfigFileToMonitor() {
+			JSONParser parser = new JSONParser();
+			int x, y, width, height;
+			Object obj = null;
+			//verifyReadFromJsonFile();
+			try {
+				FileReader file = new FileReader(CONFIG_FILE_PATH_MONITOR);
+				if (file.read() != -1) { return getAndBuildCoordinatesAndStoreInConfigToMonitor(); }
+				//obj = parser.parse(file);
+	            
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} /*catch (ParseException e) {
+				e.printStackTrace();
+			}*/
+			
+			// check if json has data
+			JSONObject objRead = (JSONObject) obj;
+			x = Integer.parseInt(objRead.get("x").toString());
+			y = Integer.parseInt(objRead.get("y").toString());
+			width = Integer.parseInt(objRead.get("width").toString());
+			height = Integer.parseInt(objRead.get("height").toString());
+
+			if (x == 0 || y == 0 || width == 0 || height == 0) {
+				return getAndBuildCoordinatesAndStoreInConfigToMonitor();
+			}
+
+			return new Rectangle(x, y, width, height);
+		}
+
+		public Rectangle getAndBuildCoordinatesAndStoreInConfigToMonitor() {
+			final Rectangle rect = new ImageDataHelper().select();
+			
+			JSONObject objWrite = new JSONObject();
+			objWrite.put("x", new Integer(rect.x));
+			objWrite.put("y", new Integer(rect.y));
+			objWrite.put("width", new Integer(rect.width));
+			objWrite.put("height", new Integer(rect.height));
+
+			try {
+				FileWriter writeTofile = new FileWriter(CONFIG_FILE_PATH_MONITOR);
+				writeTofile.write(" ");
+				writeTofile.write(objWrite.toJSONString());
+				writeTofile.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			System.out.println(objWrite);
+			return rect;
+
+		}
+	}
+

@@ -1,0 +1,117 @@
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Date;
+
+import javax.imageio.ImageIO;
+
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Display;
+import org.json.simple.parser.JSONParser;
+
+import net.sourceforge.tess4j.ITesseract;
+import net.sourceforge.tess4j.Tesseract;
+import net.sourceforge.tess4j.TesseractException;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.AbstractButton;
+import javax.swing.ButtonModel;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+public class DataExtractorTest {
+
+	public static void main(String[] args) {
+	
+		final Display display = new Display();
+	    CoordinateHelper fetchTextTargetCoordinates = new CoordinateHelper();
+	    MonitorHelper monitorCoordinatesToTrigger = new MonitorHelper();
+	    Rectangle extractedDataArea, monitorArea;
+	   
+	    extractedDataArea = fetchTextTargetCoordinates.readAndBuildCoordinatesFromConfigFile();
+	    System.out.println("Monitoring area coordinates");
+	    monitorArea = monitorCoordinatesToTrigger.readAndBuildCoordinatesFromConfigFileToMonitor();
+	    
+	    if(extractedDataArea == null) { extractedDataArea = fetchTextTargetCoordinates.getAndBuildCoordinatesAndStoreInConfig(); }
+	    if(monitorArea == null) { monitorArea = monitorCoordinatesToTrigger.getAndBuildCoordinatesAndStoreInConfigToMonitor(); }
+	    
+	    if (extractedDataArea.height == 0 || extractedDataArea.width == 0) 
+	    	extractedDataArea = fetchTextTargetCoordinates.getAndBuildCoordinatesAndStoreInConfig();
+	    
+	    if (monitorArea.height == 0 || monitorArea.width == 0) 
+	    	monitorArea = monitorCoordinatesToTrigger.getAndBuildCoordinatesAndStoreInConfigToMonitor();
+	    
+	
+		//we show the selected area in a new shell. Just for demonstration!
+		final Image imageText = new Image(display, extractedDataArea);
+		final Image imageMonitor = new Image(display, monitorArea);
+		
+		while(true) {
+			
+			if(monitorArea != monitorArea()) {
+				break;
+			}
+			continue;
+		}
+		
+		ActionListener actionListner = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent event) {
+				AbstractButton absButton = (AbstractButton) event.getSource();
+				
+				//Abstract
+				boolean selected = absButton.getModel().isSelected();
+				System.out.println("Selected=" + selected + "n");
+			}
+		};
+
+		ChangeListener changeListner = new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent event) {
+				AbstractButton aButton = (AbstractButton) event.getSource();
+				ButtonModel aModel = aButton.getModel();
+				boolean armed = aModel.isArmed();
+				boolean pressed = aModel.isPressed();
+				System.out.println("Armed :" + armed + " - Pressed :" + pressed);
+			}
+		};
+		
+		final GC gc = new GC(display);
+		gc.copyArea(imageText, extractedDataArea.x, extractedDataArea.y);
+		gc.dispose();
+	
+		BufferedImage bufImg = ImageDataHelper.convertToAWT(imageText.getImageData());
+	
+		BufferedImage bi = bufImg;
+		Date date = new Date();
+		File outputfile = new File("Sample" + date.getTime() + ".png");
+		try {
+			ImageIO.write(bi, "png", outputfile);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	
+		ITesseract instance = new Tesseract();
+		try {
+			String result = instance.doOCR(outputfile);
+			System.out.println(result);
+		} catch (TesseractException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		display.dispose();
+	}
+
+	private static Rectangle monitorArea() {
+		return null;
+	}
+}
