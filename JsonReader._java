@@ -1,0 +1,50 @@
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+public class JsonReader {
+
+	public static void main(String[] args) {
+		 JSONParser parser = new JSONParser();
+		 final String CONFIG_FILE_PATH = "D:\\JavaWorkspace\\ImageCapture_1\\testFile.json";
+		 CoordinateHelper helper = new CoordinateHelper();
+	        try {
+
+	            FileReader fileReader = new FileReader(CONFIG_FILE_PATH);
+	            if(fileReader.read() == -1) { fileReader.close(); helper.getAndBuildCoordinatesAndStoreInConfig();
+	            return;
+	            }
+	            
+				Object obj = parser.parse(fileReader);
+
+	            JSONObject jsonObject = (JSONObject) obj;
+	            System.out.println(jsonObject);
+
+	            String x = jsonObject.get("x").toString();
+	            System.out.println("x" + x);
+
+	            String y = jsonObject.get("y").toString();
+	            System.out.println("y" + y);
+
+	            String width = jsonObject.get("width").toString();
+	            System.out.println("width" + width);
+	            
+	            String height = jsonObject.get("height").toString();
+	            System.out.println("height" + height);
+
+	        } catch (FileNotFoundException e) {
+	            e.printStackTrace();
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        } catch (ParseException e) {
+	            e.printStackTrace();
+	        }
+
+
+	}
+
+}
